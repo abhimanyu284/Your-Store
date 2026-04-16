@@ -275,3 +275,67 @@ docker run -d -p 9090:9090 \
 ---
 
 ## 📁 Project Structure
+Your-Store/
+├── Assets/
+│   ├── architecture.png
+│   ├── home1.png
+│   ├── home2.png
+│   ├── categories.png
+│   ├── cart.png
+│   ├── orders.png
+│   └── signin.png
+├── node_modules/
+├── index.html
+├── index.js
+├── Dockerfile
+├── deployment.yaml
+├── prometheus.yml
+├── package.json
+├── package-lock.json
+└── README.md
+
+---
+
+## ⚠️ Challenges and Solutions
+
+| Challenge | Solution |
+|---|---|
+| `git push` rejected due to remote changes | Used `git push --force` after setting correct remote URL |
+| Docker image not found in Minikube | Used `minikube image load yourstore:latest` to load local image |
+| Jenkins couldn't find `kubectl` or `docker` | Added tool paths to Jenkins environment variables |
+| Prometheus couldn't reach `/metrics` | Changed `localhost` to host machine IP in `prometheus.yml` |
+| Pods stuck in `ImagePullBackOff` | Set `imagePullPolicy: Never` in `deployment.yaml` |
+
+---
+
+## 🔮 Future Scope
+
+- ☁️ Deploy to cloud (AWS EKS / GCP GKE)
+- 📈 Grafana dashboards for visual monitoring
+- ⚡ Horizontal Pod Autoscaling (HPA) based on traffic
+- 🔐 Add authentication and user accounts
+- 📱 Build a native Android app (already started in Android Studio)
+- 🗄️ Integrate a real database (MongoDB / PostgreSQL)
+
+---
+
+## 🏁 Conclusion
+
+The **Your Store** project successfully demonstrates a complete, production-grade DevOps pipeline applied to a real-world quick commerce application. By integrating Git/GitHub, Docker, Kubernetes, Jenkins, and Prometheus, the project showcases how modern software practices can be applied even at a small business scale.
+
+- ✅ Seamless version control and collaboration using GitHub
+- ✅ Consistent and portable deployment using Docker containerization
+- ✅ Automated build and deployment cycles through Jenkins CI/CD
+- ✅ Resilient and scalable container orchestration via Kubernetes with live pod scaling
+- ✅ Real-time application monitoring using Prometheus metrics
+
+---
+
+## 👨‍💻 Authors
+
+**Krishka Kate**
+
+**Abhimanyu Nema**
+
+---
+
