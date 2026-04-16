@@ -74,56 +74,7 @@ But the real focus of this project is the **DevOps pipeline** built around the a
 ## 🏗️ DevOps Pipeline Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                        DEVELOPER MACHINE                        │
-│                                                                 │
-│         writes code ──► git push ──► GitHub Repository         │
-└──────────────────────────────────────┬──────────────────────────┘
-                                       │
-                              webhook / trigger
-                                       │
-                                       ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                       JENKINS  (CI/CD)                          │
-│                                                                 │
-│          Stage 1: Clone Repo from GitHub                        │
-│                          ↓                                      │
-│          Stage 2: Build Docker Image (yourstore:latest)         │
-│                          ↓                                      │
-│          Stage 3: Load Image into Minikube                      │
-│                          ↓                                      │
-│          Stage 4: kubectl apply -f deployment.yaml              │
-│                          ↓                                      │
-│          Stage 5: Verify Pods are Running                       │
-└──────────────────────────────────────┬──────────────────────────┘
-                                       │
-                                  deploys to
-                                       │
-                                       ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                    KUBERNETES  (Minikube)                        │
-│                                                                 │
-│   ┌──────────────┐  ┌──────────────┐  ┌──────────────┐         │
-│   │    Pod 1     │  │    Pod 2     │  │    Pod 3     │         │
-│   │  yourstore   │  │  yourstore   │  │  yourstore   │         │
-│   │   :latest    │  │   :latest    │  │   :latest    │         │
-│   └──────────────┘  └──────────────┘  └──────────────┘         │
-│                                                                 │
-│        ↑  scaled with: kubectl scale --replicas=3               │
-│                                                                 │
-│   ┌──────────────────────────────────────────────────────┐      │
-│   │           yourstore-service  (NodePort)              │      │
-│   └──────────────────────────────────────────────────────┘      │
-└──────────────────────────┬──────────────────────────────────────┘
-                           │
-            ┌──────────────┴─────────────┐
-            │                            │
-            ▼                            ▼
-┌─────────────────────┐      ┌─────────────────────┐
-│   User / Browser    │      │     Prometheus       │
-│ :3000 (Your Store)  │      │  scrapes /metrics    │
-│                     │      │  dashboard :9090     │
-└─────────────────────┘      └─────────────────────┘
+![DevOps Pipeline Architecture](assets/architecture.png)
 ```
 
 ---
