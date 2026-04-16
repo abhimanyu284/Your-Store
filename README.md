@@ -1,6 +1,3 @@
-<div align="center">
-
-<img src="https://img.shields.io/badge/Your%20Store-Quick%20Commerce-FF6B35?style=for-the-badge&logoColor=white" alt="Your Store" height="50"/>
 
 # 🛍️ Your Store
 ### Quick Commerce for Local Clothing Stores
@@ -335,6 +332,7 @@ The **Your Store** project successfully demonstrates a complete, production-grad
 ## 👨‍💻 Authors
 
 **Krishka Kate & Abhimanyu Nema**
+
 **NMIMS Indore**
 
 ---
