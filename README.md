@@ -1,6 +1,5 @@
 <div align="center">
 
-<!-- LOGO / BANNER -->
 <img src="https://img.shields.io/badge/Your%20Store-Quick%20Commerce-FF6B35?style=for-the-badge&logoColor=white" alt="Your Store" height="50"/>
 
 # 🛍️ Your Store
@@ -34,6 +33,7 @@
 - [All Commands](#-all-commands)
 - [Monitoring](#-monitoring)
 - [Project Structure](#-project-structure)
+- [Challenges and Solutions](#-challenges-and-solutions)
 - [Future Scope](#-future-scope)
 - [Author](#-author)
 
@@ -72,3 +72,306 @@ But the real focus of this project is the **DevOps pipeline** built around the a
 ---
 
 ## 🏗️ DevOps Pipeline Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                        DEVELOPER MACHINE                        │
+│                                                                 │
+│         writes code ──► git push ──► GitHub Repository         │
+└──────────────────────────────────────┬──────────────────────────┘
+                                       │
+                              webhook / trigger
+                                       │
+                                       ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                       JENKINS  (CI/CD)                          │
+│                                                                 │
+│          Stage 1: Clone Repo from GitHub                        │
+│                          ↓                                      │
+│          Stage 2: Build Docker Image (yourstore:latest)         │
+│                          ↓                                      │
+│          Stage 3: Load Image into Minikube                      │
+│                          ↓                                      │
+│          Stage 4: kubectl apply -f deployment.yaml              │
+│                          ↓                                      │
+│          Stage 5: Verify Pods are Running                       │
+└──────────────────────────────────────┬──────────────────────────┘
+                                       │
+                                  deploys to
+                                       │
+                                       ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                    KUBERNETES  (Minikube)                        │
+│                                                                 │
+│   ┌──────────────┐  ┌──────────────┐  ┌──────────────┐         │
+│   │    Pod 1     │  │    Pod 2     │  │    Pod 3     │         │
+│   │  yourstore   │  │  yourstore   │  │  yourstore   │         │
+│   │   :latest    │  │   :latest    │  │   :latest    │         │
+│   └──────────────┘  └──────────────┘  └──────────────┘         │
+│                                                                 │
+│        ↑  scaled with: kubectl scale --replicas=3               │
+│                                                                 │
+│   ┌──────────────────────────────────────────────────────┐      │
+│   │           yourstore-service  (NodePort)              │      │
+│   └──────────────────────────────────────────────────────┘      │
+└──────────────────────────┬──────────────────────────────────────┘
+                           │
+            ┌──────────────┴─────────────┐
+            │                            │
+            ▼                            ▼
+┌─────────────────────┐      ┌─────────────────────┐
+│   User / Browser    │      │     Prometheus       │
+│ :3000 (Your Store)  │      │  scrapes /metrics    │
+│                     │      │  dashboard :9090     │
+└─────────────────────┘      └─────────────────────┘
+```
+
+---
+
+## 🔧 Tool Breakdown
+
+### <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/git/git-original.svg" width="20"/> Git & GitHub
+Version control and remote code hosting. Every change is tracked and pushed to GitHub. Jenkins pulls from here automatically on every push.
+
+---
+
+### <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/docker/docker-original.svg" width="20"/> Docker
+The app is packaged into a Docker image called `yourstore:latest`. This ensures the app runs identically on any machine — no environment issues ever.
+
+```dockerfile
+FROM node:18-alpine
+WORKDIR /app
+COPY package*.json ./
+RUN npm install
+COPY . .
+EXPOSE 3000
+CMD ["node", "server.js"]
+```
+
+```bash
+# Build
+docker build -t yourstore:latest .
+
+# Run locally
+docker run -d -p 3000:3000 --name yourstore yourstore:latest
+```
+
+---
+
+### <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/kubernetes/kubernetes-plain.svg" width="20"/> Kubernetes (Minikube)
+Kubernetes manages, deploys, and scales the Docker containers. Minikube runs it locally for development and demo purposes.
+
+```bash
+minikube start
+minikube image load yourstore:latest
+kubectl apply -f deployment.yaml
+kubectl scale deployment yourstore --replicas=3
+kubectl get pods -w
+```
+
+---
+
+### <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/jenkins/jenkins-original.svg" width="20"/> Jenkins
+Automates the entire pipeline — the moment code is pushed to GitHub, Jenkins clones, builds, loads, deploys, and verifies automatically.
+
+```groovy
+pipeline {
+  agent any
+  stages {
+    stage('Clone') {
+      steps { git 'https://github.com/abhimanyu284/Your-Store.git' }
+    }
+    stage('Build Docker Image') {
+      steps { sh 'docker build -t yourstore:latest .' }
+    }
+    stage('Load into Minikube') {
+      steps { sh 'minikube image load yourstore:latest' }
+    }
+    stage('Deploy to Kubernetes') {
+      steps { sh 'kubectl apply -f deployment.yaml' }
+    }
+    stage('Verify') {
+      steps { sh 'kubectl get pods' }
+    }
+  }
+}
+```
+
+---
+
+### <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/prometheus/prometheus-original.svg" width="20"/> Prometheus
+Monitors the app in real time by scraping the `/metrics` endpoint. Runs as a Docker container on port 9090.
+
+```bash
+docker run -d -p 9090:9090 \
+  -v prometheus.yml:/etc/prometheus/prometheus.yml \
+  prom/prometheus
+```
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+- Node.js 18+
+- Docker Desktop
+- Minikube
+- kubectl
+- Jenkins
+
+### Installation
+
+```bash
+# 1. Clone the repo
+git clone https://github.com/abhimanyu284/Your-Store.git
+cd Your-Store
+
+# 2. Install dependencies
+npm install
+
+# 3. Run locally (without Docker)
+node server.js
+
+# 4. Or run with Docker
+docker build -t yourstore:latest .
+docker run -d -p 3000:3000 --name yourstore yourstore:latest
+
+# 5. Open the app
+# http://localhost:3000
+```
+
+---
+
+## 📋 All Commands
+
+<details>
+<summary>Git Commands</summary>
+
+```bash
+git init
+git add .
+git commit -m "Initial commit"
+git remote set-url origin https://github.com/abhimanyu284/Your-Store.git
+git push -u origin main --force
+```
+</details>
+
+<details>
+<summary>Docker Commands</summary>
+
+```bash
+docker build -t yourstore:latest .
+docker run -d -p 3000:3000 --name yourstore yourstore:latest
+docker stop yourstore
+docker rm yourstore
+```
+</details>
+
+<details>
+<summary>Kubernetes Commands</summary>
+
+```bash
+minikube start
+minikube image load yourstore:latest
+kubectl apply -f deployment.yaml
+kubectl get pods
+kubectl get services
+minikube service yourstore-service
+kubectl scale deployment yourstore --replicas=3
+kubectl get pods -w
+kubectl rollout restart deployment yourstore
+```
+</details>
+
+<details>
+<summary>Prometheus Commands</summary>
+
+```bash
+docker run -d -p 9090:9090 \
+  -v prometheus.yml:/etc/prometheus/prometheus.yml \
+  prom/prometheus
+```
+</details>
+
+---
+
+## 📊 Monitoring
+
+| Endpoint | Purpose |
+|---|---|
+| `http://localhost:3000` | Main application |
+| `http://localhost:3000/health` | Health check (returns JSON status) |
+| `http://localhost:3000/metrics` | Prometheus metrics scrape endpoint |
+| `http://localhost:9090` | Prometheus dashboard |
+
+---
+
+## 📁 Project Structure
+
+```
+Your-Store/
+├── public/
+│   ├── index.html        # Frontend SPA
+│   ├── style.css         # Styles
+│   └── app.js            # Frontend JS
+├── server.js             # Express backend
+├── Dockerfile            # Docker build config
+├── deployment.yaml       # Kubernetes deployment & service
+├── prometheus.yml        # Prometheus scrape config
+├── Jenkinsfile           # Jenkins CI/CD pipeline
+└── README.md             # This file
+```
+
+---
+
+## ⚠️ Challenges and Solutions
+
+| Challenge | Solution |
+|---|---|
+| `git push` rejected due to remote changes | Used `git push --force` after setting correct remote URL |
+| Docker image not found in Minikube | Used `minikube image load yourstore:latest` to load local image |
+| Jenkins couldn't find `kubectl` or `docker` | Added tool paths to Jenkins environment variables |
+| Prometheus couldn't reach `/metrics` | Changed `localhost` to host machine IP in `prometheus.yml` |
+| Pods stuck in `ImagePullBackOff` | Set `imagePullPolicy: Never` in deployment.yaml |
+
+---
+
+## 🔮 Future Scope
+
+- ☁️ Deploy to cloud (AWS EKS / GCP GKE)
+- 📈 Grafana dashboards for visual monitoring
+- ⚡ Horizontal Pod Autoscaling (HPA) based on traffic
+- 🔐 Add authentication and user accounts
+- 📱 Build a native Android app (already started in Android Studio)
+- 🗄️ Integrate a real database (MongoDB / PostgreSQL)
+
+---
+
+## 🏁 Conclusion
+
+The **Your Store** project successfully demonstrates a complete, production-grade DevOps pipeline applied to a real-world quick commerce application. By integrating Git/GitHub, Docker, Kubernetes, Jenkins, and Prometheus, the project showcases how modern software practices can be applied even at a small business scale.
+
+Through this project we achieved:
+- ✅ Seamless version control and collaboration using GitHub
+- ✅ Consistent and portable deployment using Docker containerization
+- ✅ Automated build and deployment cycles through Jenkins CI/CD
+- ✅ Resilient and scalable container orchestration via Kubernetes with live pod scaling
+- ✅ Real-time application monitoring using Prometheus metrics
+
+The pipeline eliminates manual intervention at every stage — from code push to deployment to monitoring — mirroring how top technology companies manage their production systems.
+
+---
+
+## 👨‍💻 Author
+
+**Abhimanyu Nema**  
+[![GitHub](https://img.shields.io/badge/GitHub-abhimanyu284-181717?style=flat-square&logo=github)](https://github.com/abhimanyu284)
+
+---
+
+<div align="center">
+
+Made with ❤️ for a DevOps demo  
+⭐ Star this repo if it helped you!
+
+</div>
