@@ -275,7 +275,7 @@ docker run -d -p 9090:9090 \
 ---
 
 ## 📁 Project Structure
----
+```
 Your-Store/
 ├── Assets/
 │   ├── architecture.png
@@ -294,7 +294,7 @@ Your-Store/
 ├── package.json
 ├── package-lock.json
 └── README.md
----
+```
 ---
 
 ## ⚠️ Challenges and Solutions
