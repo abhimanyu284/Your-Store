@@ -73,9 +73,7 @@ But the real focus of this project is the **DevOps pipeline** built around the a
 
 ## 🏗️ DevOps Pipeline Architecture
 
-```
 ![DevOps Pipeline Architecture](Assets/architecture.png)
-```
 
 ---
 
